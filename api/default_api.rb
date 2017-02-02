@@ -139,7 +139,7 @@ MyApp.add_route('POST', '/questions/', {
 
 	data = JSON.parse(request.body.read)
 
-	add_question(1234, data)
+	add_question(data)
 
   {"message" => "yes, it worked"}.to_json
 end
