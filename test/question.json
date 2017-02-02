@@ -1,0 +1,16 @@
+{
+	"id" : 1234,
+	"text": "How's this course called?",
+	"answers": [
+		{
+			"id": 1,
+			"text": "Cloud Computing",
+			"correct": true
+		},
+		{
+			"id": 2,
+			"text": "Machine Learning",
+			"correct": false
+		}
+	]
+}

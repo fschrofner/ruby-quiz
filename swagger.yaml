@@ -1,0 +1,166 @@
+---
+swagger: "2.0"
+info:
+  description: "A short description."
+  version: "1.0.0"
+  title: "Quiz"
+host: "quiz-api.herokuapp.com"
+basePath: "/questions"
+schemes:
+- "http"
+- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /:
+    post:
+      summary: "Post new question"
+      description: "description"
+      parameters:
+      - in: "body"
+        name: "question"
+        description: "The question JSON you want to post"
+        required: true
+        schema:
+          $ref: "#/definitions/Question"
+      responses:
+        200:
+          description: "Made a new question"
+          schema:
+            $ref: "#/definitions/Question"
+        500:
+          description: "An error occured"
+  /{id}:
+    get:
+      summary: "Get a question"
+      description: "description"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "The id of the question"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "Getted question"
+          schema:
+            $ref: "#/definitions/Question"
+        404:
+          description: "Question not found"
+        500:
+          description: "An error occured"
+    put:
+      summary: "Update a question"
+      description: "description"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "The id of the question"
+        required: true
+        type: "integer"
+        format: "int32"
+      - in: "body"
+        name: "question"
+        description: "The updated question"
+        required: true
+        schema:
+          $ref: "#/definitions/Question"
+      responses:
+        200:
+          description: "Updated question"
+          schema:
+            $ref: "#/definitions/Question"
+        404:
+          description: "Question not found"
+        500:
+          description: "An error occured"
+    delete:
+      summary: "Delete a question"
+      description: "description"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "The id of the question"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "Deleted question"
+        404:
+          description: "Question not found"
+        500:
+          description: "An error occured"
+  /{id}/answer:
+    post:
+      summary: "Answer a question"
+      description: "description"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "The id of the question"
+        required: true
+        type: "integer"
+        format: "int32"
+      - in: "body"
+        name: "question"
+        description: "The answered question"
+        required: true
+        schema:
+          $ref: "#/definitions/Question"
+      responses:
+        200:
+          description: "Updated question"
+          schema:
+            $ref: "#/definitions/inline_response_200"
+        404:
+          description: "Question not found"
+        500:
+          description: "An error occured"
+  /random:
+    get:
+      summary: "Get a random question"
+      description: "description"
+      parameters: []
+      responses:
+        200:
+          description: "Getted question"
+          schema:
+            $ref: "#/definitions/Question"
+        500:
+          description: "An error occured"
+definitions:
+  Question:
+    type: "object"
+    required:
+    - "answers"
+    - "text"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+      text:
+        type: "string"
+      answers:
+        type: "array"
+        items:
+          $ref: "#/definitions/Answer"
+  Answer:
+    type: "object"
+    required:
+    - "text"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+      text:
+        type: "string"
+      correct:
+        type: "boolean"
+  inline_response_200:
+    properties:
+      correct:
+        type: "boolean"
