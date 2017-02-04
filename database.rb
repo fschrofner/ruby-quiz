@@ -1,8 +1,8 @@
 require 'sequel'
 require 'pg'
 
-#SERVER_ADDRESS = 'ec2-50-17-207-16.compute-1.amazonaws.com'
-SERVER_ADDRESS = '127.0.0.1'
+SERVER_ADDRESS = 'ec2-50-17-207-16.compute-1.amazonaws.com'
+#SERVER_ADDRESS = '127.0.0.1'
 PORT = '5432'
 DBNAME = 'd6lak3olpllv2t'
 USER = 'wzsaizbidqbckt'
