@@ -7,7 +7,7 @@ class Configuration
 
   def initialize
     @api_version = '1.0'
-    @base_path = 'http://localhost:4567'
+    @base_path = 'https://ruby-quiz.herokuapp.com/'
     @swagger_version = '1.1'
     @format_specifier = ".json"
   end
@@ -15,6 +15,7 @@ end
 
 class Swaggering < Sinatra::Base
   register Sinatra::CrossOrigin
+  enable :cross_origin
 
   @@routes = {}
   @@configuration = Configuration.new
@@ -159,5 +160,13 @@ class Swaggering < Sinatra::Base
       "models" => models
     }
     api_listing.to_json
+  end
+
+  options "*" do
+    response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
+
+    response.headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
+
+    status 200
   end
 end
