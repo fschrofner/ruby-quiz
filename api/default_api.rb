@@ -2,6 +2,10 @@ require 'json'
 require './database'
 require 'sinatra/cross_origin'
 
+configure do
+  enable :cross_origin
+end
+
 MyApp.add_route('POST', '/questions/{id}/answer', {
   "resourcePath" => "/Default",
   "summary" => "Answer a question",
