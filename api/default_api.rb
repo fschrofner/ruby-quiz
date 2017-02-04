@@ -56,6 +56,7 @@ MyApp.add_route('DELETE', '/questions/{id}', {
 		status 404
 	else
 		delete_from_database(params[:id])
+		status 200
 	end
 end
 
