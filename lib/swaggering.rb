@@ -7,7 +7,7 @@ class Configuration
 
   def initialize
     @api_version = '1.0'
-    @base_path = 'http://localhost:4567'
+    @base_path = 'https://ruby-quiz.herokuapp.com/'
     @swagger_version = '1.1'
     @format_specifier = ".json"
   end
