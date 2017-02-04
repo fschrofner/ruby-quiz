@@ -34,15 +34,6 @@ SET search_path = public, pg_catalog;
 -- Name: answer; Type: TYPE; Schema: public; Owner: postgres
 --
 
-CREATE TYPE answer AS (
-	id integer,
-	text text,
-	correct boolean
-);
-
-
-ALTER TYPE answer OWNER TO postgres;
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -54,7 +45,7 @@ SET default_with_oids = false;
 CREATE TABLE questions (
     id integer NOT NULL,
     text text NOT NULL,
-    answers answer[]
+    answers text[]
 );
 
 

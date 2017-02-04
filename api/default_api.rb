@@ -25,7 +25,12 @@ MyApp.add_route('POST', '/questions/{id}/answer', {
   cross_origin
   # the guts live here
 
-  {"message" => "yes, it worked"}.to_json
+	
+	if !question_exists(params[:id])
+		status 404
+	else
+		answer_question(params[:id], JSON.parse(request.body.read))
+	end
 end
 
 
@@ -47,7 +52,31 @@ MyApp.add_route('DELETE', '/questions/{id}', {
   cross_origin
   # the guts live here
 
-  {"message" => "yes, it worked"}.to_json
+	if !question_exists(params[:id])
+		status 404
+	else
+		delete_from_database(params[:id])
+	end
+end
+
+
+MyApp.add_route('GET', '/questions/random', {
+  "resourcePath" => "/Default",
+  "summary" => "Get a random question",
+  "nickname" => "random_get", 
+  "responseClass" => "Question", 
+  "endpoint" => "/random", 
+  "notes" => "description",
+  "parameters" => [
+    ]}) do
+  cross_origin
+  # the guts live here
+
+	if database_empty?
+		status 500
+	else
+		get_random_from_database()
+	end
 end
 
 
@@ -69,9 +98,11 @@ MyApp.add_route('GET', '/questions/{id}', {
   cross_origin
   # the guts live here
 
-  #{"message" => "yes, it worked"}.to_json
-	helloId = params[:id].to_s
-	{"message" => "Hello #{helloId}"}.to_json
+	if question_exists(params[:id])
+		get_from_database(params[:id])
+	else
+		status 404
+	end
 end
 
 
@@ -99,23 +130,13 @@ MyApp.add_route('PUT', '/questions/{id}', {
   cross_origin
   # the guts live here
 
-  {"message" => "yes, it worked"}.to_json
-end
+	data = JSON.parse(request.body.read)
 
-
-MyApp.add_route('GET', '/questions/random', {
-  "resourcePath" => "/Default",
-  "summary" => "Get a random question",
-  "nickname" => "random_get", 
-  "responseClass" => "Question", 
-  "endpoint" => "/random", 
-  "notes" => "description",
-  "parameters" => [
-    ]}) do
-  cross_origin
-  # the guts live here
-
-  {"message" => "yes, it worked"}.to_json
+	if question_exists(params[:id])
+		update_question(params[:id], data)
+	else
+		status 404
+	end
 end
 
 
@@ -140,7 +161,5 @@ MyApp.add_route('POST', '/questions/', {
 	data = JSON.parse(request.body.read)
 
 	add_question(data)
-
-  {"message" => "yes, it worked"}.to_json
 end
 
