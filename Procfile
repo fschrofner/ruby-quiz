@@ -1,1 +1,1 @@
-web: bundle exec ruby server.rb
+web: rackup -p 80 config.ru

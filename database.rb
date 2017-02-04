@@ -1,19 +1,18 @@
 require 'sequel'
 require 'pg'
 
-#Sequel::Database.extension :pg_array
+Sequel.extension 'pg_array'
+Sequel.extension 'pg_array_ops'
+Sequel::Model.db.extension :pg_array
 
-#var SERVER_ADDRESS = 'postgres://wzsaizbidqbckt:a39a4293ca3895f91742f736e24fa9f5d57ed99eee4521da818fed50f3f9c066@ec2-50-17-207-16.compute-1.amazonaws.com:5432/d6lak3olpllv2t'
-SERVER_ADDRESS = '127.0.0.1'
+SERVER_ADDRESS = 'ec2-50-17-207-16.compute-1.amazonaws.com'
+#SERVER_ADDRESS = '127.0.0.1'
 PORT = '5432'
 DBNAME = 'd6lak3olpllv2t'
 USER = 'wzsaizbidqbckt'
 PASS = 'a39a4293ca3895f91742f736e24fa9f5d57ed99eee4521da818fed50f3f9c066'
 
 DB = Sequel.connect('postgres://' + USER + ':' + PASS + '@' + SERVER_ADDRESS + ':' + PORT + '/' + DBNAME)
-Sequel.extension 'pg_array'
-Sequel.extension 'pg_array_ops'
-Sequel::Model.db.extension :pg_array
 
 Questions = DB[:questions]
 
