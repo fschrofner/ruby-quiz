@@ -15,6 +15,7 @@ end
 
 class Swaggering < Sinatra::Base
   register Sinatra::CrossOrigin
+  enable :cross_origin
 
   @@routes = {}
   @@configuration = Configuration.new
