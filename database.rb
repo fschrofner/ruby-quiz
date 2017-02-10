@@ -1,23 +1,9 @@
-require 'sequel'
-require 'pg'
+require 'redis'
 
-SERVER_ADDRESS = 'ec2-50-17-207-16.compute-1.amazonaws.com'
-#SERVER_ADDRESS = '127.0.0.1'
-PORT = '5432'
-DBNAME = 'd6lak3olpllv2t'
-USER = 'wzsaizbidqbckt'
-PASS = 'a39a4293ca3895f91742f736e24fa9f5d57ed99eee4521da818fed50f3f9c066'
-
-DB = Sequel.connect('postgres://' + USER + ':' + PASS + '@' + SERVER_ADDRESS + ':' + PORT + '/' + DBNAME)
-Sequel.extension 'pg_array'
-Sequel.extension 'pg_array_ops'
-Sequel::Model.db.extension :pg_array
-
-
-Questions = DB[:questions]
+Questions = Redis.new
 
 def get_question(id)
-  Questions[:id => id]
+  Questions.get(id)
 end
 
 def add_question(question_json)
@@ -52,19 +38,15 @@ def convert_to_question(id, json)
 end
 
 def save_to_database(question)
-  Questions.insert(:id => question.id, :text => question.text, :answers => Sequel.pg_array(question.answers.map{|x| create_answer_object(x).to_json}))
+  Questions.set(question.id, question.create_json)
 end
 
 def update_in_database(question)
-  Questions.where(:id => question.id).update(:text => question.text, :answers => Sequel.pg_array(question.answers.map{|x| create_answer_object(x).to_json}))
+  save_to_database(question)
 end
 
 def question_exists(id)
-	if Questions[:id => id] != nil
-		true
-	else
-		false
-	end
+  Questions.exists(id)
 end
 
 def create_answer_object(answer)
@@ -76,40 +58,32 @@ def create_censored_answer_object(answer)
 end
 
 def get_from_database(id)
-	question_db = Questions[:id => id]
-	question = Question.new
-	question.id = question_db[:id]
-	question.text = question_db[:text]
-	question.answers = question_db[:answers].map{|x|
-		answer = JSON.parse(x)
-		Answer.new(answer["id"], answer["text"], answer["correct"])
-	}
-
+	question_db = Questions.get(id)
+	question = Question.parse_json(JSON.parse(question_db))
 	question.create_censored_json()
 end
 
 def get_random_from_database()
-	size = Questions.all.length
+	size = Questions.dbsize
 	
 	if size > 0
-		random_number = rand(0..size-1)
-		id = Questions.all[random_number][:id]
+		id = Questions.randomkey
 	  get_from_database(id)
 	end
 end
 
 def database_empty?()
-	Questions.all.length < 1
+	Questions.dbsize < 1
 end
 
 def delete_from_database(id)
-	Questions.where(:id => id).delete
+	Questions.del(id)
 end
 
 def answer_question(id, question)
-	question_db = Questions[:id => id]
-	question_db[:answers].each{|x|
-		answer = JSON.parse(x)
+	question_db = JSON.parse(Questions.get(id))
+
+	question_db["answers"].each{|answer|
 		
 		matching_answer = question["answers"].select{|y|
 			y["id"] == answer["id"]
@@ -128,6 +102,16 @@ class Question
 	attr_accessor :id
 	attr_accessor :text
 	attr_accessor :answers
+
+  def self.parse_json(json)
+    question = Question.new
+    question.id = json["id"]
+	  question.text = json["text"]
+	  question.answers = json["answers"].map{|answer|
+		  Answer.new(answer["id"], answer["text"], answer["correct"])
+	  }
+    question
+  end
 
 	def create_json()
 		{"id" => id, "text" => text, "answers" => answers.map{|x| create_answer_object(x)}}.to_json
