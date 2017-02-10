@@ -1,5 +1,6 @@
 require 'json'
 require './database'
+require './mail'
 
 MyApp.add_route('POST', '/questions/{id}/answer', {
   "resourcePath" => "/Default",
@@ -25,11 +26,22 @@ MyApp.add_route('POST', '/questions/{id}/answer', {
   cross_origin
   # the guts live here
 
-	
-	if !question_exists(params[:id])
+	id = params[:id]
+	if !question_exists(id)
 		status 404
 	else
-		answer_question(params[:id], JSON.parse(request.body.read))
+		response = answer_question(id, JSON.parse(request.body.read))
+    total_answers = get_total_answers(id)
+    right_wrong_ratio = get_right_wrong_ratio(id)
+
+    if(total_answers > 10 &&
+       right_wrong_ratio <= 0.35 &&
+       !get_email_notification_sent(id))
+      puts 'triggered email notification!'
+      send_question_too_hard_message(id, get_right_answers(id), get_wrong_answers(id))
+      set_email_notification_sent(id)
+    end
+    response
 	end
 end
 

@@ -3,7 +3,7 @@ require 'redis'
 Questions = Redis.new
 
 def get_question(id)
-  Questions.get(id)
+  Questions.hget("questions", id)
 end
 
 def add_question(question_json)
@@ -38,7 +38,7 @@ def convert_to_question(id, json)
 end
 
 def save_to_database(question)
-  Questions.set(question.id, question.create_json)
+  Questions.hset("questions", question.id, question.create_json)
 end
 
 def update_in_database(question)
@@ -46,7 +46,7 @@ def update_in_database(question)
 end
 
 def question_exists(id)
-  Questions.exists(id)
+  Questions.hexists("questions", id)
 end
 
 def create_answer_object(answer)
@@ -58,30 +58,33 @@ def create_censored_answer_object(answer)
 end
 
 def get_from_database(id)
-	question_db = Questions.get(id)
-	question = Question.parse_json(JSON.parse(question_db))
-	question.create_censored_json()
+	question_db = Questions.hget("questions", id)
+  if(question_db != nil)
+    question = Question.parse_json(JSON.parse(question_db))
+	  question.create_censored_json()
+  end
 end
 
 def get_random_from_database()
-	size = Questions.dbsize
-	
+	size = Questions.hlen("questions")
+
 	if size > 0
-		id = Questions.randomkey
-	  get_from_database(id)
+		index = rand(0..size-1)
+    id = Questions.hkeys("questions")[index]
+    get_from_database(id)
 	end
 end
 
 def database_empty?()
-	Questions.dbsize < 1
+	Questions.hlen("questions") < 1
 end
 
 def delete_from_database(id)
-	Questions.del(id)
+	Questions.hdel("questions", id)
 end
 
 def answer_question(id, question)
-	question_db = JSON.parse(Questions.get(id))
+	question_db = JSON.parse(Questions.hget("questions", id))
 
 	question_db["answers"].each{|answer|
 		
@@ -90,13 +93,51 @@ def answer_question(id, question)
 		}
 
 		if matching_answer.length < 1 || matching_answer[0]["correct"] != answer["correct"]
+      puts 'increased wrong count'
+      Questions.hincrby("wrong_count", id, 1)
 			return {"result" => false}.to_json
 		end
 	}
+  puts 'increased right count'
+  Questions.hincrby("right_count", id, 1)
 	{"result" => true}.to_json
-	
 end
 
+def get_right_wrong_ratio(id)
+  right = get_right_answers(id)
+  wrong = get_wrong_answers(id)
+  if(wrong.to_i <= 0)
+    wrong = 1
+  end
+
+  if(right.to_i <= 0)
+    right = 1
+  end
+
+  right.to_f / wrong.to_f
+end
+
+def get_total_answers(id)
+  right = get_right_answers(id)
+  wrong = get_wrong_answers(id)
+  right.to_i + wrong.to_i
+end
+
+def get_right_answers(id)
+  Questions.hget("right_count", id)
+end
+
+def get_wrong_answers(id)
+  Questions.hget("wrong_count", id)
+end
+
+def get_email_notification_sent(id)
+  Questions.sismember("sent_notifications", id)
+end
+
+def set_email_notification_sent(id)
+  Questions.sadd("sent_notifications", id)
+end
 
 class Question
 	attr_accessor :id
