@@ -1,6 +1,7 @@
 require 'json'
 require 'sinatra/base'
 require 'sinatra/cross_origin'
+require 'rollbar/middleware/sinatra'
 
 class Configuration
   attr_accessor :base_path, :api_version, :swagger_version, :format_specifier
@@ -13,7 +14,14 @@ class Configuration
   end
 end
 
+Rollbar.configure do |config|
+  config.access_token = '662305a33bd7459380dc41c259a03ba5'
+  # other configuration settings
+  # ...
+end
+
 class Swaggering < Sinatra::Base
+  use Rollbar::Middleware::Sinatra
   register Sinatra::CrossOrigin
   enable :cross_origin
 
