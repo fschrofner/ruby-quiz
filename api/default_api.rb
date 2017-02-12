@@ -28,6 +28,7 @@ MyApp.add_route('POST', '/questions/{id}/answer', {
 
 	id = params[:id]
 	if !question_exists(id)
+		Rollbar.warning('ID not found!')
 		status 404
 	else
 		response = answer_question(id, JSON.parse(request.body.read))
@@ -41,6 +42,7 @@ MyApp.add_route('POST', '/questions/{id}/answer', {
       send_question_too_hard_message(id, get_right_answers(id), get_wrong_answers(id))
       set_email_notification_sent(id)
     end
+		Rollbar.info('POST successful.')
     response
 	end
 end
@@ -65,9 +67,11 @@ MyApp.add_route('DELETE', '/questions/{id}', {
   # the guts live here
 
 	if !question_exists(params[:id])
+		Rollbar.warning('ID not found!')
 		status 404
 	else
 		delete_from_database(params[:id])
+		Rollbar.info('DELETE successful.')
 		status 200
 	end
 end
@@ -88,7 +92,9 @@ MyApp.add_route('GET', '/questions/random', {
 	if database_empty?
 		status 500
 	else
-		get_random_from_database()
+		answer = get_random_from_database()
+		Rollbar.info('GET successful.')
+		answer
 	end
 end
 
@@ -112,8 +118,11 @@ MyApp.add_route('GET', '/questions/{id}', {
   # the guts live here
 
 	if question_exists(params[:id])
-		get_from_database(params[:id])
+		question = get_from_database(params[:id])
+		Rollbar.info('GET successful.')
+		question
 	else
+		Rollbar.warning('ID not found!')
 		status 404
 	end
 end
@@ -146,8 +155,11 @@ MyApp.add_route('PUT', '/questions/{id}', {
 	data = JSON.parse(request.body.read)
 
 	if question_exists(params[:id])
-		update_question(params[:id], data)
+		question = update_question(params[:id], data)
+		Rollbar.info('PUT successful.')
+		question
 	else
+		Rollbar.warning('ID not found!')
 		status 404
 	end
 end
@@ -173,6 +185,8 @@ MyApp.add_route('POST', '/questions/', {
 
 	data = JSON.parse(request.body.read)
 
-	add_question(data)
+	question = add_question(data)
+	Rollbar.info('POST successful.')
+	question
 end
 
